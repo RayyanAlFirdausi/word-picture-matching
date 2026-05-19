@@ -41,6 +41,7 @@ export const dictionaries = {
     },
     levels: {
       collectionAria: "Buka koleksi kata",
+      collectionLabel: "KOLEKSI",
       listAria: (title: string) => `Daftar level ${title}`,
       lockedLevel: "Level terkunci",
       stars: (earned: number) => `${earned} dari 3 bintang`,
@@ -130,6 +131,7 @@ export const dictionaries = {
     },
     levels: {
       collectionAria: "Open word collection",
+      collectionLabel: "COLLECTION",
       listAria: (title: string) => `${title} level list`,
       lockedLevel: "Level locked",
       stars: (earned: number) => `${earned} of 3 stars`,

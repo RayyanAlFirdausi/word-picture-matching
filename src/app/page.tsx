@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CategoryLevelBadges } from "./category-level-badges";
 import { getDictionary, localeCookieName, normalizeLocale } from "./i18n";
 import { LanguageToggle } from "./language-toggle";
+import { MusicToggleControl } from "./music-toggle-control";
 import { ResetGameControl } from "./reset-game-control";
 
 const backgroundPattern =
@@ -105,7 +106,7 @@ export default async function House() {
   const dictionary = getDictionary(locale);
 
   return (
-    <main className="relative min-h-[max(744px,100dvh)] overflow-hidden bg-[#678cff] font-gasoek">
+    <main className="relative min-h-[max(744px,100dvh)] overflow-x-clip bg-[#678cff] font-gasoek">
       <div
         aria-hidden="true"
         className="absolute inset-0"
@@ -140,7 +141,9 @@ export default async function House() {
           cancel: dictionary.home.resetCancel,
           confirm: dictionary.home.resetConfirm,
         }}
-      />
+      >
+        <MusicToggleControl />
+      </ResetGameControl>
 
       <LanguageToggle
         locale={locale}

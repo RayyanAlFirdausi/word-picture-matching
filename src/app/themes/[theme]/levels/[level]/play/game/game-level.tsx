@@ -47,6 +47,9 @@ type CommonLabels = {
 
 const gameBackgroundPattern =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect x='1' y='1' width='118' height='118' rx='12' fill='%235f80f4'/%3E%3C/svg%3E\")";
+const roundDurationSeconds = 30;
+const roundDurationMs = roundDurationSeconds * 1000;
+const autoAdvanceDelayMs = 3000;
 
 function GameButton({
   children,
@@ -92,6 +95,7 @@ function LetterTile({
   disabled,
   status = "idle",
   width = "fixed",
+  size = "bank",
 }: {
   letter: Letter;
   onClick?: () => void;
@@ -103,8 +107,11 @@ function LetterTile({
   disabled?: boolean;
   status?: AnswerStatus;
   width?: "fixed" | "full";
+  size?: "bank" | "answer";
 }) {
   const widthClass = width === "full" ? "w-full" : "w-[108px]";
+  const textClass = size === "answer" ? "text-[clamp(32px,4vw,40px)]" : "text-[24px]";
+  const paddingClass = size === "answer" ? "px-2 pb-3 pt-2" : "px-4 pb-4 pt-3";
   const statusClass = {
     idle: "bg-white shadow-[inset_0_-5px_0_0_#d5d5d5]",
     correct: "bg-[#ddffc5] shadow-[inset_0_-5px_0_0_#84d747]",
@@ -122,7 +129,7 @@ function LetterTile({
       onDragOver={onDragOver}
       onDrop={onDrop}
       aria-label={ariaLabel}
-      className={`relative flex h-[52px] ${widthClass} shrink-0 items-center justify-center rounded-[16px] px-4 pb-4 pt-3 text-[24px] font-bold leading-normal text-black transition-transform focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white ${
+      className={`relative flex h-[52px] ${widthClass} shrink-0 items-center justify-center rounded-[16px] ${paddingClass} ${textClass} font-bold leading-normal text-black transition-transform focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white ${
         disabled
           ? "cursor-default"
           : "cursor-grab hover:-translate-y-0.5 active:cursor-grabbing"
@@ -196,6 +203,19 @@ function Hearts({ lives, labels }: { lives: number; labels: GameLabels }) {
   );
 }
 
+function HintEarnedToast() {
+  return (
+    <div
+      role="status"
+      className="absolute left-1/2 top-[590px] z-30 flex w-[min(596px,calc(100%-32px))] -translate-x-1/2 animate-[hint-toast_1s_ease-in-out_forwards] justify-end pr-3"
+    >
+      <div className="relative flex items-center overflow-hidden rounded-[16px] border-2 border-[#347d00] bg-[#58cd04] px-5 pb-[18px] pt-3 font-geist text-[16px] font-semibold leading-normal text-white shadow-[inset_0_-8px_0_0_#43a000]">
+        +1 hint
+      </div>
+    </div>
+  );
+}
+
 function AnswerLines({
   answer,
   placedLetters,
@@ -264,6 +284,7 @@ function AnswerLines({
                   ariaLabel={labels.answerLetters(answer.length)}
                   status={answerStatus}
                   width="full"
+                  size="answer"
                 />
               ) : null}
             </div>
@@ -305,10 +326,11 @@ export function GameLevel({
   const [placedLetters, setPlacedLetters] = useState<Letter[]>([]);
   const [lives, setLives] = useState(3);
   const [round, setRound] = useState(0);
-  const [secondsLeft, setSecondsLeft] = useState(15);
+  const [secondsLeft, setSecondsLeft] = useState(roundDurationSeconds);
   const [answerStatus, setAnswerStatus] = useState<AnswerStatus>("idle");
   const [hintsAvailable, setHintsAvailable] = useState(0);
   const [correctAnswersTowardHint, setCorrectAnswersTowardHint] = useState(0);
+  const [showHintEarnedToast, setShowHintEarnedToast] = useState(false);
   const [hasHydratedState, setHasHydratedState] = useState(false);
   const draggedLetterRef = useRef<{
     source: "bank" | "answer";
@@ -335,8 +357,8 @@ export function GameLevel({
     !answerComplete &&
     letterBank.some((letter) => letter.value === nextHintLetter);
   const timerColor =
-    secondsLeft >= 11 ? "#58CD04" : secondsLeft >= 6 ? "#FFE514" : "#FF0000";
-  const timerWidth = `${(secondsLeft / 15) * 100}%`;
+    secondsLeft > 20 ? "#58CD04" : secondsLeft > 10 ? "#FFE514" : "#FF0000";
+  const timerWidth = `${(secondsLeft / roundDurationSeconds) * 100}%`;
 
   useEffect(() => {
     timerStateRef.current = {
@@ -433,7 +455,7 @@ export function GameLevel({
     setLetterBank(gameQuestions[nextQuestionIndex].letters);
     setPlacedLetters([]);
     setAnswerStatus("idle");
-    setSecondsLeft(15);
+    setSecondsLeft(roundDurationSeconds);
     draggedLetterRef.current = null;
     dropHandledRef.current = false;
     setRound((current) => current + 1);
@@ -447,7 +469,7 @@ export function GameLevel({
     const startedAt = Date.now();
     const interval = window.setInterval(() => {
       const elapsedSeconds = (Date.now() - startedAt) / 1000;
-      setSecondsLeft(Math.max(0, 15 - elapsedSeconds));
+      setSecondsLeft(Math.max(0, roundDurationSeconds - elapsedSeconds));
     }, 50);
     const timeout = window.setTimeout(() => {
       const {
@@ -476,7 +498,7 @@ export function GameLevel({
       const nextQuestionIndex = questionIndexAtTimeout + 1;
       setQuestionIndex(nextQuestionIndex);
       resetRound(nextQuestionIndex);
-    }, 15000);
+    }, roundDurationMs);
 
     return () => {
       window.clearInterval(interval);
@@ -562,7 +584,7 @@ export function GameLevel({
     setPlacedLetters((current) => [...current, hintedLetter]);
   }
 
-  function advanceQuestion() {
+  const advanceQuestion = useCallback(() => {
     if (!hasCheckedAnswer) {
       return;
     }
@@ -575,6 +597,7 @@ export function GameLevel({
 
       if (nextCorrectAnswersTowardHint >= 2) {
         setHintsAvailable((current) => current + 1);
+        setShowHintEarnedToast(true);
         setCorrectAnswersTowardHint(0);
       } else {
         setCorrectAnswersTowardHint(nextCorrectAnswersTowardHint);
@@ -590,7 +613,38 @@ export function GameLevel({
     setCorrectCount(nextCorrectCount);
     setQuestionIndex(nextQuestionIndex);
     resetRound(nextQuestionIndex);
-  }
+  }, [
+    answerStatus,
+    congratulationsHref,
+    correctAnswersTowardHint,
+    correctCount,
+    gameQuestions.length,
+    hasCheckedAnswer,
+    isLastQuestion,
+    questionIndex,
+    resetRound,
+    router,
+  ]);
+
+  useEffect(() => {
+    if (!hasCheckedAnswer) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => advanceQuestion(), autoAdvanceDelayMs);
+
+    return () => window.clearTimeout(timeout);
+  }, [advanceQuestion, hasCheckedAnswer]);
+
+  useEffect(() => {
+    if (!showHintEarnedToast) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setShowHintEarnedToast(false), 1000);
+
+    return () => window.clearTimeout(timeout);
+  }, [showHintEarnedToast]);
 
   function handleDragStart(source: "bank" | "answer", index: number) {
     if (hasCheckedAnswer) {
@@ -680,14 +734,14 @@ export function GameLevel({
 
   if (!hasHydratedState || !currentQuestion) {
     return (
-      <main className="relative min-h-dvh overflow-hidden bg-[#678cff] font-gasoek">
+      <main className="relative min-h-dvh overflow-x-clip bg-[#678cff] font-gasoek">
         <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: gameBackgroundPattern }} />
       </main>
     );
   }
 
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[#678cff] font-gasoek">
+    <main className="relative min-h-dvh overflow-x-clip bg-[#678cff] font-gasoek">
       <div
         aria-hidden="true"
         className="absolute inset-0"
@@ -709,6 +763,7 @@ export function GameLevel({
       </header>
 
       {answerStatus !== "idle" ? <AnswerToast status={answerStatus} labels={labels} /> : null}
+      {showHintEarnedToast ? <HintEarnedToast /> : null}
 
       <section className="absolute left-1/2 top-[82px] z-10 h-[331px] w-[min(596px,calc(100%-32px))] -translate-x-1/2 overflow-hidden rounded-[24px] bg-[#f1f1f1] shadow-[0_14px_34px_rgba(0,0,0,0.12)]">
         <Image

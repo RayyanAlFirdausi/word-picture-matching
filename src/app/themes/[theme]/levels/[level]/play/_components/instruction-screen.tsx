@@ -57,14 +57,16 @@ export function InstructionScreen({
   themeData,
   children,
   backLabel = "BACK",
+  collectionLabel = "Koleksi",
 }: {
   theme: ThemeSlug;
   themeData: (typeof themes)[ThemeSlug];
   children: ReactNode;
   backLabel?: string;
+  collectionLabel?: string;
 }) {
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[#678cff] font-gasoek">
+    <main className="relative min-h-dvh overflow-x-clip bg-[#678cff] font-gasoek">
       <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: backgroundPattern }} />
 
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -72,8 +74,9 @@ export function InstructionScreen({
           {backLabel}
         </div>
 
-        <div className="absolute right-10 top-10 z-10 flex h-18 items-center justify-center overflow-hidden rounded-[64px] border-2 border-[#9e5400] bg-[#ffe514] px-8 pb-6.5 pt-5 shadow-[inset_0_-8px_0_0_#e18216]">
+        <div className="absolute right-10 top-10 z-10 flex h-18 items-center justify-center gap-2 overflow-hidden rounded-[64px] border-2 border-[#9e5400] bg-[#ffe514] px-8 pb-6.5 pt-5 text-center text-[20px] leading-[1.3] text-[#e18216] shadow-[inset_0_-8px_0_0_#e18216]">
           <Image src="/figma/archive-book.svg" alt="" width={32} height={32} className="size-8" />
+          <span>{collectionLabel}</span>
         </div>
 
         <h1

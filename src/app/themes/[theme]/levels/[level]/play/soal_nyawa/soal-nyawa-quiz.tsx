@@ -215,7 +215,7 @@ export function SoalNyawaQuiz({
   }
 
   return (
-    <main className="relative min-h-[max(744px,100dvh)] overflow-hidden bg-[#678cff] font-geist">
+    <main className="relative min-h-[max(744px,100dvh)] overflow-x-clip bg-[#678cff] font-geist">
       <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: backgroundPattern }} />
 
       <h1

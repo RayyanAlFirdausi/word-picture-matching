@@ -70,7 +70,12 @@ export default async function InstructionTwoPage({ params }: { params: Promise<{
   const dictionary = getDictionary(await getRequestLocale());
 
   return (
-    <InstructionScreen theme={theme} themeData={themeData} backLabel={dictionary.common.back}>
+    <InstructionScreen
+      theme={theme}
+      themeData={themeData}
+      backLabel={dictionary.common.back}
+      collectionLabel={dictionary.levels.collectionLabel}
+    >
       <InstructionTwoModal
         previousHref={`/themes/${theme}/levels/${level}/play/instruction-1`}
         nextHref={`/themes/${theme}/levels/${level}/play/instruction-3`}

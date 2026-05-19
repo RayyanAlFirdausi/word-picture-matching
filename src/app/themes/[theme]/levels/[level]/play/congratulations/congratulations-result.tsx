@@ -371,7 +371,7 @@ export function CongratulationsResult({
   }
 
   return (
-    <main className="relative min-h-[max(744px,100dvh)] overflow-hidden bg-[#678cff] font-gasoek">
+    <main className="relative min-h-[max(744px,100dvh)] overflow-x-clip bg-[#678cff] font-gasoek">
       <div
         aria-hidden="true"
         className="absolute inset-0"

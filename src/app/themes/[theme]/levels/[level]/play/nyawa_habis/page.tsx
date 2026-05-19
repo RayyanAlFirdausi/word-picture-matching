@@ -27,7 +27,7 @@ export default async function NyawaHabisPage({ params }: { params: Promise<{ the
   const dictionary = getDictionary(await getRequestLocale());
 
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[#678cff] font-gasoek">
+    <main className="relative min-h-dvh overflow-x-clip bg-[#678cff] font-gasoek">
       <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: backgroundPattern }} />
 
       <section className="absolute left-1/2 top-[100px] z-10 flex w-[min(552px,calc(100%-32px))] -translate-x-1/2 flex-col items-center gap-20 text-center">

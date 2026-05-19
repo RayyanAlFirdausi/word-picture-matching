@@ -54,7 +54,7 @@ export default async function ThemeLevelsPage({
   const dictionary = getDictionary(locale);
 
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[#678cff] font-gasoek">
+    <main className="relative min-h-dvh overflow-x-clip bg-[#678cff] font-gasoek">
       <div
         aria-hidden="true"
         className="absolute inset-0"
@@ -71,9 +71,10 @@ export default async function ThemeLevelsPage({
       <Link
         href={`/collection?from=${encodeURIComponent(`/themes/${theme}/levels`)}`}
         aria-label={dictionary.levels.collectionAria}
-        className="absolute right-10 top-10 z-10 flex h-18 items-center justify-center overflow-hidden rounded-[64px] border-2 border-[#9e5400] bg-[#ffe514] px-8 pb-6.5 pt-5 shadow-[inset_0_-8px_0_0_#e18216] transition-transform hover:-translate-y-0.5 focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
+        className="absolute right-10 top-10 z-10 flex h-18 items-center justify-center gap-2 overflow-hidden rounded-[64px] border-2 border-[#9e5400] bg-[#ffe514] px-8 pb-6.5 pt-5 text-center text-[20px] leading-[1.3] text-[#e18216] shadow-[inset_0_-8px_0_0_#e18216] transition-transform hover:-translate-y-0.5 focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
       >
         <Image src="/figma/archive-book.svg" alt="" width={32} height={32} className="size-8" />
+        <span>{dictionary.levels.collectionLabel}</span>
       </Link>
 
       <h1

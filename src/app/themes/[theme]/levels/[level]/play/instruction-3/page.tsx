@@ -74,7 +74,12 @@ export default async function InstructionThreePage({ params }: { params: Promise
   const dictionary = getDictionary(await getRequestLocale());
 
   return (
-    <InstructionScreen theme={theme} themeData={themeData} backLabel={dictionary.common.back}>
+    <InstructionScreen
+      theme={theme}
+      themeData={themeData}
+      backLabel={dictionary.common.back}
+      collectionLabel={dictionary.levels.collectionLabel}
+    >
       <InstructionThreeModal
         previousHref={`/themes/${theme}/levels/${level}/play/instruction-2`}
         loadingHref={`/themes/${theme}/levels/${level}/play/loading`}

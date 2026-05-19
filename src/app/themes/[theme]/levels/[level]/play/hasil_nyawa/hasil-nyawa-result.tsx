@@ -40,7 +40,7 @@ export function HasilNyawaResult({
   }
 
   return (
-    <main className="relative min-h-[max(744px,100dvh)] overflow-hidden bg-[#678cff] font-geist">
+    <main className="relative min-h-[max(744px,100dvh)] overflow-x-clip bg-[#678cff] font-geist">
       <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: backgroundPattern }} />
 
       <section className="absolute left-1/2 top-[100px] z-10 flex w-[min(552px,calc(100%-32px))] -translate-x-1/2 flex-col items-center gap-20 text-center">

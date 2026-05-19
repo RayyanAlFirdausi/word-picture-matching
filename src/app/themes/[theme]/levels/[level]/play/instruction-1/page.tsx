@@ -76,7 +76,12 @@ export default async function InstructionOnePage({ params }: { params: Promise<{
   const dictionary = getDictionary(await getRequestLocale());
 
   return (
-    <InstructionScreen theme={theme} themeData={themeData} backLabel={dictionary.common.back}>
+    <InstructionScreen
+      theme={theme}
+      themeData={themeData}
+      backLabel={dictionary.common.back}
+      collectionLabel={dictionary.levels.collectionLabel}
+    >
       <InstructionOneModal
         closeHref={`/themes/${theme}/levels`}
         nextHref={`/themes/${theme}/levels/${level}/play/instruction-2`}

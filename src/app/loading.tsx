@@ -3,7 +3,7 @@ const backgroundPattern =
 
 export default function Loading() {
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[#678cff] font-gasoek">
+    <main className="relative min-h-dvh overflow-x-clip bg-[#678cff] font-gasoek">
       <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: backgroundPattern }} />
     </main>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 import { clearAllPersistedGameStates } from "./themes/[theme]/levels/[level]/play/_components/game-state-storage";
 import { resetPersistedProgress } from "./themes/[theme]/levels/[level]/play/_components/progress-storage";
 
@@ -12,6 +12,7 @@ type ResetGameControlProps = {
     cancel: string;
     confirm: string;
   };
+  children?: ReactNode;
 };
 
 function ExitIllustration() {
@@ -31,7 +32,7 @@ function ExitIllustration() {
   );
 }
 
-export function ResetGameControl({ labels }: ResetGameControlProps) {
+export function ResetGameControl({ labels, children }: ResetGameControlProps) {
   const router = useRouter();
   const titleId = useId();
   const [isOpen, setIsOpen] = useState(false);
@@ -45,13 +46,16 @@ export function ResetGameControl({ labels }: ResetGameControlProps) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 left-5 z-40 flex h-[58px] items-center justify-center overflow-hidden rounded-[64px] border-2 border-[#9e5400] bg-[#ffe514] px-8 pb-5 pt-4 text-center text-[16px] uppercase leading-[1.3] text-[#e18216] shadow-[inset_0_-8px_0_0_#e18216] transition-transform hover:-translate-y-0.5 focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white max-[700px]:bottom-3 max-[700px]:left-3 max-[700px]:h-13 max-[700px]:px-5 max-[700px]:pb-4 max-[700px]:pt-3 max-[700px]:text-[13px]"
-      >
-        {labels.resetGame}
-      </button>
+      <div className="fixed bottom-5 left-5 z-40 flex items-center gap-2 max-[700px]:bottom-3 max-[700px]:left-3">
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="flex h-[58px] items-center justify-center overflow-hidden rounded-[64px] border-2 border-[#9e5400] bg-[#ffe514] px-8 pb-5 pt-4 text-center text-[16px] uppercase leading-[1.3] text-[#e18216] shadow-[inset_0_-8px_0_0_#e18216] transition-transform hover:-translate-y-0.5 focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white max-[700px]:h-13 max-[700px]:px-5 max-[700px]:pb-4 max-[700px]:pt-3 max-[700px]:text-[13px]"
+        >
+          {labels.resetGame}
+        </button>
+        {children}
+      </div>
 
       {isOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 p-4 backdrop-blur-[6px]">

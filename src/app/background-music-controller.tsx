@@ -12,8 +12,59 @@ const wrongSoundSrc = "/audio/Salah.mp3";
 const backgroundVolume = 0.25;
 const effectVolume = 0.65;
 const soundEffectEventName = "word-picture-matching:sound-effect";
+const musicMutedStorageKey = "word-picture-matching:music-muted";
+const musicStateEventName = "word-picture-matching:music-state";
 
 export type GameSoundEffect = "correct" | "wrong";
+
+type BackgroundMusicState = {
+  muted: boolean;
+};
+
+export function readBackgroundMusicMuted() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.localStorage.getItem(musicMutedStorageKey) === "true";
+}
+
+export function toggleBackgroundMusicMuted() {
+  const nextMuted = !readBackgroundMusicMuted();
+  writeBackgroundMusicMuted(nextMuted);
+  dispatchBackgroundMusicState(nextMuted);
+}
+
+export function subscribeToBackgroundMusicState(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  function handleStorage(event: StorageEvent) {
+    if (event.key === musicMutedStorageKey) {
+      onStoreChange();
+    }
+  }
+
+  window.addEventListener(musicStateEventName, onStoreChange);
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    window.removeEventListener(musicStateEventName, onStoreChange);
+    window.removeEventListener("storage", handleStorage);
+  };
+}
+
+function writeBackgroundMusicMuted(muted: boolean) {
+  try {
+    window.localStorage.setItem(musicMutedStorageKey, String(muted));
+  } catch {
+  }
+}
+
+function dispatchBackgroundMusicState(muted: boolean) {
+  window.dispatchEvent(new CustomEvent<BackgroundMusicState>(musicStateEventName, { detail: { muted } }));
+}
 
 type RouteAudioConfig = {
   backgroundSrc: string;
@@ -62,12 +113,15 @@ export function BackgroundMusicController() {
   const lastIntroKeyRef = useRef<string | null>(null);
   const pendingIntroRef = useRef<{ introSrc: string; backgroundSrc: string } | null>(null);
   const [hasAudioError, setHasAudioError] = useState(false);
+  const [isMusicMuted, setIsMusicMuted] = useState(() => readBackgroundMusicMuted());
   const audioConfig = useMemo(() => getRouteAudioConfig(pathname), [pathname]);
+
+  useEffect(() => subscribeToBackgroundMusicState(() => setIsMusicMuted(readBackgroundMusicMuted())), []);
 
   const playBackground = useCallback(async () => {
     const audio = backgroundAudioRef.current;
 
-    if (!audio || hasAudioError) {
+    if (!audio || hasAudioError || isMusicMuted) {
       return;
     }
 
@@ -77,7 +131,7 @@ export function BackgroundMusicController() {
       await audio.play();
     } catch {
     }
-  }, [hasAudioError]);
+  }, [hasAudioError, isMusicMuted]);
 
   const switchBackground = useCallback(
     (src: string) => {
@@ -104,6 +158,11 @@ export function BackgroundMusicController() {
       const backgroundAudio = backgroundAudioRef.current;
       const introAudio = introAudioRef.current;
 
+      if (isMusicMuted) {
+        pendingIntroRef.current = null;
+        return;
+      }
+
       if (!introAudio || hasAudioError) {
         switchBackground(backgroundSrc);
         return;
@@ -128,11 +187,18 @@ export function BackgroundMusicController() {
       } catch {
       }
     },
-    [hasAudioError, switchBackground],
+    [hasAudioError, isMusicMuted, switchBackground],
   );
 
   useEffect(() => {
     if (hasAudioError) {
+      return;
+    }
+
+    if (isMusicMuted) {
+      backgroundAudioRef.current?.pause();
+      introAudioRef.current?.pause();
+      pendingIntroRef.current = null;
       return;
     }
 
@@ -147,10 +213,14 @@ export function BackgroundMusicController() {
     }
 
     switchBackground(audioConfig.backgroundSrc);
-  }, [audioConfig, hasAudioError, playIntroThenBackground, switchBackground]);
+  }, [audioConfig, hasAudioError, isMusicMuted, playIntroThenBackground, switchBackground]);
 
   useEffect(() => {
     function retryPendingPlayback() {
+      if (isMusicMuted) {
+        return;
+      }
+
       const pendingIntro = pendingIntroRef.current;
 
       if (pendingIntro) {
@@ -168,7 +238,7 @@ export function BackgroundMusicController() {
       window.removeEventListener("pointerdown", retryPendingPlayback);
       window.removeEventListener("keydown", retryPendingPlayback);
     };
-  }, [playBackground, playIntroThenBackground]);
+  }, [isMusicMuted, playBackground, playIntroThenBackground]);
 
   useEffect(() => {
     function handleSoundEffect(event: Event) {
