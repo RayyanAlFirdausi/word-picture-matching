@@ -93,6 +93,10 @@ export function isCollectionItemAnswered(theme: string, itemId: string) {
   return readAnsweredCollectionItems(theme).includes(itemId);
 }
 
+export function resetPersistedProgress() {
+  writePersistedProgress(createDefaultProgress());
+}
+
 export function persistAnsweredCollectionItem(theme: string, itemId: string) {
   const progress = readPersistedProgress();
   const themeSlug = normalizeTheme(theme);

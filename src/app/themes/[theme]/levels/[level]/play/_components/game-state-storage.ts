@@ -92,6 +92,15 @@ export function clearPersistedGameState(storageKey: string) {
   }
 }
 
+export function clearAllPersistedGameStates() {
+  try {
+    Object.keys(window.sessionStorage)
+      .filter((key) => key.startsWith("wpm:") && key.endsWith(":game-state"))
+      .forEach((key) => window.sessionStorage.removeItem(key));
+  } catch {
+  }
+}
+
 export function restoreLivesInPersistedGameState(storageKey: string, restoredLives: number) {
   const currentState = readPersistedGameState(storageKey);
 

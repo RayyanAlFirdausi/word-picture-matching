@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CategoryLevelBadges } from "./category-level-badges";
 import { getDictionary, localeCookieName, normalizeLocale } from "./i18n";
 import { LanguageToggle } from "./language-toggle";
+import { ResetGameControl } from "./reset-game-control";
 
 const backgroundPattern =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect x='1' y='1' width='118' height='118' rx='12' fill='%235f80f4'/%3E%3C/svg%3E\")";
@@ -59,7 +60,7 @@ function CategoryCard({
   return (
     <Link
       href={`/themes/${category.slug}/levels`}
-      className="relative flex h-[456px] min-w-[343px] flex-1 shrink-0 flex-col gap-[2px] rounded-[24px] bg-white p-[2px] shadow-[0_14px_17px_rgba(0,0,0,0.12)] transition-transform hover:z-20 hover:-translate-y-1 focus-visible:z-20 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
+      className="relative flex h-[396px] min-w-[329px] flex-1 shrink-0 flex-col gap-[2px] rounded-[24px] bg-white p-[2px] shadow-[0_14px_17px_rgba(0,0,0,0.12)] transition-transform hover:z-20 hover:-translate-y-1 focus-visible:z-20 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
       aria-label={categoryAriaLabel}
     >
       <div className="flex h-10 w-full shrink-0 items-center justify-center px-5 py-2">
@@ -75,7 +76,7 @@ function CategoryCard({
           src={category.image}
           alt=""
           fill
-          sizes="343px"
+          sizes="329px"
           className="object-cover"
           style={{ objectPosition: category.imagePosition }}
         />
@@ -120,7 +121,7 @@ export default async function House() {
 
       <section
         aria-label={dictionary.home.gamesLabel}
-        className="absolute left-1/2 top-[248px] z-10 flex min-h-[496px] w-[1053px] -translate-x-1/2 items-start gap-3 overflow-y-visible pb-10 max-[1120px]:left-0 max-[1120px]:w-full max-[1120px]:translate-x-0 max-[1120px]:overflow-x-auto max-[1120px]:px-9 max-[700px]:top-55 max-[700px]:px-4"
+        className="absolute left-1/2 top-[228px] z-10 flex min-h-[416px] w-[1013px] -translate-x-1/2 items-start gap-3 overflow-y-visible pb-10 max-[1080px]:left-0 max-[1080px]:w-full max-[1080px]:translate-x-0 max-[1080px]:overflow-x-auto max-[1080px]:px-9 max-[700px]:top-55 max-[700px]:px-4"
       >
         {categories.map((category) => (
           <CategoryCard
@@ -131,6 +132,15 @@ export default async function House() {
           />
         ))}
       </section>
+
+      <ResetGameControl
+        labels={{
+          resetGame: dictionary.home.resetGame,
+          confirmPrompt: dictionary.home.resetConfirmPrompt,
+          cancel: dictionary.home.resetCancel,
+          confirm: dictionary.home.resetConfirm,
+        }}
+      />
 
       <LanguageToggle
         locale={locale}

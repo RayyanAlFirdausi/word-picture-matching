@@ -3,7 +3,11 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { defaultLocale, getDictionary, type Locale } from "../../../../../../i18n";
+import {
+  defaultLocale,
+  getDictionary,
+  type Locale,
+} from "../../../../../../i18n";
 import { clearPersistedGameState } from "../_components/game-state-storage";
 import { persistLevelCompletion } from "../_components/progress-storage";
 
@@ -28,7 +32,15 @@ type ConfettiPiece = {
   delay: number;
 };
 
-const confettiColors = ["#ff2f6d", "#ffd400", "#35d07f", "#20a8ff", "#8b5cf6", "#ff7a1a", "#ffffff"];
+const confettiColors = [
+  "#ff2f6d",
+  "#ffd400",
+  "#35d07f",
+  "#20a8ff",
+  "#8b5cf6",
+  "#ff7a1a",
+  "#ffffff",
+];
 
 function createConfettiPieces(width: number, height: number) {
   return Array.from({ length: 260 }, (_, index): ConfettiPiece => {
@@ -100,7 +112,11 @@ function ConfettiCanvas() {
       const x = piece.x + piece.velocityX * time + sway;
       const y = piece.y + piece.velocityY * time + piece.gravity * time * time;
 
-      if (y > window.innerHeight + 80 || x < -120 || x > window.innerWidth + 120) {
+      if (
+        y > window.innerHeight + 80 ||
+        x < -120 ||
+        x > window.innerWidth + 120
+      ) {
         return;
       }
 
@@ -115,7 +131,12 @@ function ConfettiCanvas() {
         confettiContext.arc(0, 0, piece.width * 0.55, 0, Math.PI * 2);
         confettiContext.fill();
       } else {
-        confettiContext.fillRect(-piece.width / 2, -piece.height / 2, piece.width, piece.height);
+        confettiContext.fillRect(
+          -piece.width / 2,
+          -piece.height / 2,
+          piece.width,
+          piece.height,
+        );
       }
 
       confettiContext.restore();
@@ -143,7 +164,13 @@ function ConfettiCanvas() {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-10" aria-hidden="true" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none fixed inset-0 z-10"
+      aria-hidden="true"
+    />
+  );
 }
 
 function getStars(correctCount: number, totalCount: number) {
@@ -186,9 +213,14 @@ type CongratulationsCommonLabels = {
   next: string;
   previous: string;
   backToLevels: string;
+  exit: string;
 };
 
-function getResultContent(correctCount: number, totalCount: number, labels: CongratulationsLabels) {
+function getResultContent(
+  correctCount: number,
+  totalCount: number,
+  labels: CongratulationsLabels,
+) {
   const stars = getStars(correctCount, totalCount);
 
   if (stars === 3) {
@@ -222,14 +254,30 @@ function getResultContent(correctCount: number, totalCount: number, labels: Cong
   };
 }
 
-function StarRow({ earned, labels }: { earned: number; labels: CongratulationsLabels }) {
+function StarRow({
+  earned,
+  labels,
+}: {
+  earned: number;
+  labels: CongratulationsLabels;
+}) {
   return (
-    <div className="flex h-[124px] w-full items-center justify-center gap-0.5" aria-label={labels.stars(earned)}>
+    <div
+      className="flex h-[124px] w-full items-center justify-center gap-0.5"
+      aria-label={labels.stars(earned)}
+    >
       {[0, 1, 2].map((star) => (
-        <div key={star} className="relative size-[124px] shrink-0 overflow-visible">
+        <div
+          key={star}
+          className="relative size-[124px] shrink-0 overflow-visible"
+        >
           <div className="absolute inset-[-19.02%_-31.61%_-40.7%_-31.61%]">
             <Image
-              src={star < earned ? "/figma/congratulations-star-active.svg" : "/figma/congratulations-star-inactive.svg"}
+              src={
+                star < earned
+                  ? "/figma/congratulations-star-active.svg"
+                  : "/figma/congratulations-star-inactive.svg"
+              }
               alt=""
               fill
               sizes="202px"
@@ -256,7 +304,8 @@ function ResultButton({
 }) {
   const variantClass = {
     pink: "border-[#4f001b] bg-[#ff679a] text-[#4f001b] shadow-[inset_0_-8px_0_0_#ae276d]",
-    yellow: "border-[#9e5400] bg-[#ffe514] text-[#e18216] shadow-[inset_0_-8px_0_0_#e18216]",
+    yellow:
+      "border-[#9e5400] bg-[#ffe514] text-[#e18216] shadow-[inset_0_-8px_0_0_#e18216]",
     blue: "border-[#02324b] bg-[#0af] text-white shadow-[inset_0_-8px_0_0_#0064bf]",
   }[variant];
 
@@ -323,7 +372,11 @@ export function CongratulationsResult({
 
   return (
     <main className="relative min-h-[max(744px,100dvh)] overflow-hidden bg-[#678cff] font-gasoek">
-      <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: backgroundPattern }} />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{ backgroundImage: backgroundPattern }}
+      />
       <ConfettiCanvas />
 
       <section className="absolute left-1/2 top-[100px] z-10 flex w-[min(552px,calc(100%-32px))] -translate-x-1/2 flex-col items-center gap-20 text-center">
@@ -354,11 +407,13 @@ export function CongratulationsResult({
               {commonLabels.repeat}
             </ResultButton>
             <ResultButton onClick={goPrimary} variant="yellow">
-              {primaryLabel === "Next" ? commonLabels.next : commonLabels.previous}
+              {primaryLabel === "Next"
+                ? commonLabels.next
+                : commonLabels.previous}
             </ResultButton>
           </div>
           <ResultButton onClick={goToLevels} variant="blue" wide>
-            {commonLabels.backToLevels}
+            {commonLabels.exit}
           </ResultButton>
         </div>
       </section>

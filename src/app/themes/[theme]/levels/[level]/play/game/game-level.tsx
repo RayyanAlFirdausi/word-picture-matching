@@ -91,6 +91,7 @@ function LetterTile({
   ariaLabel,
   disabled,
   status = "idle",
+  width = "fixed",
 }: {
   letter: Letter;
   onClick?: () => void;
@@ -101,7 +102,9 @@ function LetterTile({
   ariaLabel: string;
   disabled?: boolean;
   status?: AnswerStatus;
+  width?: "fixed" | "full";
 }) {
+  const widthClass = width === "full" ? "w-full" : "w-[108px]";
   const statusClass = {
     idle: "bg-white shadow-[inset_0_-5px_0_0_#d5d5d5]",
     correct: "bg-[#ddffc5] shadow-[inset_0_-5px_0_0_#84d747]",
@@ -119,7 +122,7 @@ function LetterTile({
       onDragOver={onDragOver}
       onDrop={onDrop}
       aria-label={ariaLabel}
-      className={`relative flex h-[52px] w-[108px] shrink-0 items-center justify-center rounded-[16px] px-4 pb-4 pt-3 text-[24px] font-bold leading-normal text-black transition-transform focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white ${
+      className={`relative flex h-[52px] ${widthClass} shrink-0 items-center justify-center rounded-[16px] px-4 pb-4 pt-3 text-[24px] font-bold leading-normal text-black transition-transform focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white ${
         disabled
           ? "cursor-default"
           : "cursor-grab hover:-translate-y-0.5 active:cursor-grabbing"
@@ -260,6 +263,7 @@ function AnswerLines({
                   }}
                   ariaLabel={labels.answerLetters(answer.length)}
                   status={answerStatus}
+                  width="full"
                 />
               ) : null}
             </div>
