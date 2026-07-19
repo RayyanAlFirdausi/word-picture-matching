@@ -21,7 +21,9 @@ import {
 } from "../_components/game-state-storage";
 import { persistAnsweredCollectionItem } from "../_components/progress-storage";
 
-type Letter = GameLetter;
+type Letter = GameLetter & {
+  isPlaceholder?: boolean;
+};
 type AnswerStatus = GameAnswerStatus;
 
 type GameLabels = {
@@ -47,9 +49,40 @@ type CommonLabels = {
 
 const gameBackgroundPattern =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect x='1' y='1' width='118' height='118' rx='12' fill='%235f80f4'/%3E%3C/svg%3E\")";
-const roundDurationSeconds = 30;
+const roundDurationSeconds = 60;
 const roundDurationMs = roundDurationSeconds * 1000;
 const autoAdvanceDelayMs = 3000;
+
+function createPlayableLetter(letter: Letter): Letter {
+  return {
+    id: letter.id,
+    value: letter.value,
+  };
+}
+
+function createLetterPlaceholder(letter: Letter): Letter {
+  return {
+    ...createPlayableLetter(letter),
+    isPlaceholder: true,
+  };
+}
+
+function restoreLettersToBank(letterBank: Letter[], letters: Letter[]) {
+  return letters.reduce((bank, letter) => {
+    const placeholderIndex = bank.findIndex((bankLetter) => bankLetter.id === letter.id && bankLetter.isPlaceholder);
+    const restoredLetter = createPlayableLetter(letter);
+
+    if (placeholderIndex === -1) {
+      return bank.some((bankLetter) => bankLetter.id === letter.id && !bankLetter.isPlaceholder)
+        ? bank
+        : [...bank, restoredLetter];
+    }
+
+    const nextBank = [...bank];
+    nextBank[placeholderIndex] = restoredLetter;
+    return nextBank;
+  }, letterBank);
+}
 
 function GameButton({
   children,
@@ -109,9 +142,9 @@ function LetterTile({
   width?: "fixed" | "full";
   size?: "bank" | "answer";
 }) {
-  const widthClass = width === "full" ? "w-full" : "w-[108px]";
-  const textClass = size === "answer" ? "text-[clamp(32px,4vw,40px)]" : "text-[24px]";
-  const paddingClass = size === "answer" ? "px-2 pb-3 pt-2" : "px-4 pb-4 pt-3";
+  const widthClass = width === "full" ? "w-full" : "w-[64px]";
+  const textClass = size === "answer" ? "text-[clamp(20px,4vw,24px)]" : "text-[24px]";
+  const paddingClass = size === "answer" ? "px-1 pb-4 pt-3" : "px-4 pb-4 pt-3";
   const statusClass = {
     idle: "bg-white shadow-[inset_0_-5px_0_0_#d5d5d5]",
     correct: "bg-[#ddffc5] shadow-[inset_0_-5px_0_0_#84d747]",
@@ -129,18 +162,27 @@ function LetterTile({
       onDragOver={onDragOver}
       onDrop={onDrop}
       aria-label={ariaLabel}
-      className={`relative flex h-[52px] ${widthClass} shrink-0 items-center justify-center rounded-[16px] ${paddingClass} ${textClass} font-bold leading-normal text-black transition-transform focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white ${
+      className={`relative flex h-[52px] ${widthClass} shrink-0 items-center justify-center rounded-[16px] ${paddingClass} ${textClass} font-medium leading-normal text-black transition-transform focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white ${
         disabled
           ? "cursor-default"
           : "cursor-grab hover:-translate-y-0.5 active:cursor-grabbing"
       } ${statusClass}`}
       style={{
         fontFamily: "var(--font-geist-sans), Arial, Helvetica, sans-serif",
-        fontWeight: 700,
+        fontWeight: 500,
       }}
     >
       {letter.value}
     </button>
+  );
+}
+
+function LetterPlaceholder() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none h-[52px] w-[64px] shrink-0 rounded-[16px] bg-[#d4d4d4] shadow-[inset_0_-5px_0_0_#ababab]"
+    />
   );
 }
 
@@ -207,7 +249,7 @@ function HintEarnedToast() {
   return (
     <div
       role="status"
-      className="absolute left-1/2 top-[590px] z-30 flex w-[min(596px,calc(100%-32px))] -translate-x-1/2 animate-[hint-toast_1s_ease-in-out_forwards] justify-end pr-3"
+      className="absolute left-1/2 top-[590px] z-30 flex w-[min(520px,calc(100%-32px))] -translate-x-1/2 animate-[hint-toast_1s_ease-in-out_forwards] justify-end pr-3"
     >
       <div className="relative flex items-center overflow-hidden rounded-[16px] border-2 border-[#347d00] bg-[#58cd04] px-5 pb-[18px] pt-3 font-geist text-[16px] font-semibold leading-normal text-white shadow-[inset_0_-8px_0_0_#43a000]">
         +1 hint
@@ -238,7 +280,7 @@ function AnswerLines({
   labels: GameLabels;
 }) {
   return (
-    <div className="absolute bottom-5 left-5 flex w-[calc(100%-40px)] items-start justify-center gap-2">
+    <div className="flex w-full items-start justify-center gap-2">
       {answer.split("").map((_, index) => {
         const letter = placedLetters[index];
 
@@ -255,7 +297,7 @@ function AnswerLines({
                 onDropToSlot(index);
               }
             }}
-            className="flex min-w-0 flex-1 flex-col items-center gap-1"
+            className="flex min-w-0 flex-1 flex-col items-center gap-2"
           >
             <div className="flex h-[52px] w-full items-center justify-center">
               {letter ? (
@@ -288,7 +330,7 @@ function AnswerLines({
                 />
               ) : null}
             </div>
-            <span className="h-1 w-full rounded-[64px] bg-white/40 backdrop-blur-md" />
+            <span className="h-1 w-full rounded-[64px] bg-white" />
           </div>
         );
       })}
@@ -355,7 +397,7 @@ export function GameLevel({
     hintsAvailable > 0 &&
     !hasCheckedAnswer &&
     !answerComplete &&
-    letterBank.some((letter) => letter.value === nextHintLetter);
+    letterBank.some((letter) => !letter.isPlaceholder && letter.value === nextHintLetter);
   const timerColor =
     secondsLeft > 20 ? "#58CD04" : secondsLeft > 10 ? "#FFE514" : "#FF0000";
   const timerWidth = `${(secondsLeft / roundDurationSeconds) * 100}%`;
@@ -474,7 +516,6 @@ export function GameLevel({
     const timeout = window.setTimeout(() => {
       const {
         answerStatus: statusAtTimeout,
-        correctCount: correctCountAtTimeout,
         lives: livesAtTimeout,
         questionIndex: questionIndexAtTimeout,
       } = timerStateRef.current;
@@ -490,21 +531,14 @@ export function GameLevel({
         return;
       }
 
-      if (questionIndexAtTimeout >= gameQuestions.length - 1) {
-        router.replace(`${congratulationsHref}?correct=${correctCountAtTimeout}&total=${gameQuestions.length}`);
-        return;
-      }
-
-      const nextQuestionIndex = questionIndexAtTimeout + 1;
-      setQuestionIndex(nextQuestionIndex);
-      resetRound(nextQuestionIndex);
+      resetRound(questionIndexAtTimeout);
     }, roundDurationMs);
 
     return () => {
       window.clearInterval(interval);
       window.clearTimeout(timeout);
     };
-  }, [congratulationsHref, gameQuestions.length, hasHydratedState, resetRound, round, router]);
+  }, [gameQuestions.length, hasHydratedState, resetRound, round]);
 
   useEffect(() => {
     if (hasHydratedState && lives === 0) {
@@ -521,6 +555,7 @@ export function GameLevel({
 
     if (
       !selected ||
+      selected.isPlaceholder ||
       placedLetters.length >= answer.length ||
       hasCheckedAnswer
     ) {
@@ -529,9 +564,11 @@ export function GameLevel({
 
     setAnswerStatus("idle");
     setLetterBank((current) =>
-      current.filter((_, bankIndex) => bankIndex !== index),
+      current.map((letter, bankIndex) =>
+        bankIndex === index ? createLetterPlaceholder(letter) : letter,
+      ),
     );
-    setPlacedLetters((current) => [...current, selected]);
+    setPlacedLetters((current) => [...current, createPlayableLetter(selected)]);
   }
 
   function removeAll() {
@@ -539,7 +576,7 @@ export function GameLevel({
       return;
     }
 
-    setLetterBank((current) => [...current, ...placedLetters]);
+    setLetterBank((current) => restoreLettersToBank(current, placedLetters));
     setPlacedLetters([]);
     setAnswerStatus("idle");
     draggedLetterRef.current = null;
@@ -569,7 +606,7 @@ export function GameLevel({
     }
 
     const hintedLetterIndex = letterBank.findIndex(
-      (letter) => letter.value === nextHintLetter,
+      (letter) => !letter.isPlaceholder && letter.value === nextHintLetter,
     );
     const hintedLetter = letterBank[hintedLetterIndex];
 
@@ -579,9 +616,11 @@ export function GameLevel({
 
     setHintsAvailable((current) => Math.max(0, current - 1));
     setLetterBank((current) =>
-      current.filter((_, index) => index !== hintedLetterIndex),
+      current.map((letter, index) =>
+        index === hintedLetterIndex ? createLetterPlaceholder(letter) : letter,
+      ),
     );
-    setPlacedLetters((current) => [...current, hintedLetter]);
+    setPlacedLetters((current) => [...current, createPlayableLetter(hintedLetter)]);
   }
 
   const advanceQuestion = useCallback(() => {
@@ -666,7 +705,7 @@ export function GameLevel({
     setPlacedLetters((current) =>
       current.filter((_, letterIndex) => letterIndex !== index),
     );
-    setLetterBank((current) => [...current, selected]);
+    setLetterBank((current) => restoreLettersToBank(current, [selected]));
     draggedLetterRef.current = null;
   }
 
@@ -698,20 +737,22 @@ export function GameLevel({
     if (dragged.source === "bank") {
       const selected = letterBank[dragged.index];
 
-      if (!selected) {
+      if (!selected || selected.isPlaceholder || placedLetters.length >= answer.length) {
         draggedLetterRef.current = null;
         return;
       }
 
       setAnswerStatus("idle");
       setLetterBank((current) =>
-        current.filter((_, index) => index !== dragged.index),
+        current.map((letter, index) =>
+          index === dragged.index ? createLetterPlaceholder(letter) : letter,
+        ),
       );
       setPlacedLetters((current) => {
         const next = [...current];
         const targetIndex = Math.min(slotIndex, answer.length - 1, next.length);
-        next.splice(targetIndex, 0, selected);
-        return next.slice(0, answer.length);
+        next.splice(targetIndex, 0, createPlayableLetter(selected));
+        return next;
       });
       draggedLetterRef.current = null;
       return;
@@ -765,30 +806,18 @@ export function GameLevel({
       {answerStatus !== "idle" ? <AnswerToast status={answerStatus} labels={labels} /> : null}
       {showHintEarnedToast ? <HintEarnedToast /> : null}
 
-      <section className="absolute left-1/2 top-[82px] z-10 h-[331px] w-[min(596px,calc(100%-32px))] -translate-x-1/2 overflow-hidden rounded-[24px] bg-[#f1f1f1] shadow-[0_14px_34px_rgba(0,0,0,0.12)]">
+      <section className="absolute left-1/2 top-[82px] z-10 h-[240px] w-[min(520px,calc(100%-32px))] -translate-x-1/2 overflow-hidden rounded-[24px] bg-[#f1f1f1] shadow-[0_14px_34px_rgba(0,0,0,0.12)]">
         <Image
           src={currentQuestion.image}
           alt=""
           fill
-          sizes="596px"
-          className="object-cover object-bottom"
+          sizes="(max-width: 552px) calc(100vw - 32px), 520px"
+          className="object-cover object-[center_40%]"
           priority={questionIndex === 0}
         />
-        <div className="absolute inset-x-0 bottom-0 h-[132px] bg-gradient-to-b from-black/0 to-black/80" />
         <div className="absolute left-2 top-2 flex h-12 items-center justify-center rounded-[64px] bg-black/20 px-5 py-3 font-geist text-[20px] font-medium leading-normal text-white backdrop-blur-[32px]">
           {labels.questionProgress(questionIndex + 1, gameQuestions.length)}
         </div>
-        <AnswerLines
-          answer={answer}
-          placedLetters={placedLetters}
-          onDragStart={handleDragStart}
-          onDropToSlot={handleDropToSlot}
-          onReturnLetter={returnAnswerLetter}
-          onAnswerDragEnd={handleAnswerDragEnd}
-          answerStatus={answerStatus}
-          locked={hasCheckedAnswer}
-          labels={labels}
-        />
         <button
           type="button"
           disabled={!hasAnswer || hasCheckedAnswer}
@@ -803,32 +832,50 @@ export function GameLevel({
         </button>
       </section>
 
-      <section
-        aria-label={labels.letterChoices}
-        className="absolute left-1/2 top-[437px] z-10 flex w-[min(588px,calc(100%-32px))] -translate-x-1/2 flex-wrap justify-center gap-3"
-      >
-        {letterBank.map((letter, index) => (
-          <LetterTile
-            key={letter.id}
-            letter={letter}
-            disabled={hasCheckedAnswer}
-            onClick={() => chooseBankLetter(index)}
-            onDragStart={() => handleDragStart("bank", index)}
-            onDragOver={(event) => {
-              if (!hasCheckedAnswer) {
-                event.preventDefault();
-              }
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              handleDropToSlot(placedLetters.length);
-            }}
-            ariaLabel={labels.chooseLetter(letter.value)}
-          />
-        ))}
+      <section className="absolute left-1/2 top-[342px] z-10 w-[min(520px,calc(100%-32px))] -translate-x-1/2">
+        <AnswerLines
+          answer={answer}
+          placedLetters={placedLetters}
+          onDragStart={handleDragStart}
+          onDropToSlot={handleDropToSlot}
+          onReturnLetter={returnAnswerLetter}
+          onAnswerDragEnd={handleAnswerDragEnd}
+          answerStatus={answerStatus}
+          locked={hasCheckedAnswer}
+          labels={labels}
+        />
       </section>
 
-      <section className="absolute left-1/2 top-[649px] z-10 flex w-[min(596px,calc(100%-32px))] -translate-x-1/2 items-center gap-2">
+      <section
+        aria-label={labels.letterChoices}
+        className="absolute left-1/2 top-[438px] z-10 flex w-[min(520px,calc(100%-32px))] -translate-x-1/2 flex-wrap justify-center gap-3"
+      >
+        {letterBank.map((letter, index) =>
+          letter.isPlaceholder ? (
+            <LetterPlaceholder key={letter.id} />
+          ) : (
+            <LetterTile
+              key={letter.id}
+              letter={letter}
+              disabled={hasCheckedAnswer}
+              onClick={() => chooseBankLetter(index)}
+              onDragStart={() => handleDragStart("bank", index)}
+              onDragOver={(event) => {
+                if (!hasCheckedAnswer) {
+                  event.preventDefault();
+                }
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                handleDropToSlot(placedLetters.length);
+              }}
+              ariaLabel={labels.chooseLetter(letter.value)}
+            />
+          ),
+        )}
+      </section>
+
+      <section className="absolute left-1/2 top-[650px] z-10 flex w-[min(520px,calc(100%-32px))] -translate-x-1/2 items-center gap-2">
         {hasCheckedAnswer ? (
           <GameButton wide onClick={advanceQuestion} variant="yellow">
             {isLastQuestion ? commonLabels.seeResult : commonLabels.next}

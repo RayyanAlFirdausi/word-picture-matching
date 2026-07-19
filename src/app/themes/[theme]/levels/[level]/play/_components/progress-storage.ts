@@ -134,7 +134,7 @@ export function persistBestStars(theme: string, level: string | number, earnedSt
   });
 }
 
-export function persistLevelCompletion(theme: string, level: string | number, earnedStars: number) {
+export function persistLevelCompletion(theme: string, level: string | number, earnedStars: number, correctCount: number) {
   const progress = readPersistedProgress();
   const themeSlug = normalizeTheme(theme);
   const numericLevel = normalizeLevel(level);
@@ -142,7 +142,9 @@ export function persistLevelCompletion(theme: string, level: string | number, ea
   const currentStars = progress.starsByTheme[themeSlug]?.[levelKey] ?? 0;
   const nextStars = Math.max(currentStars, clampStars(earnedStars));
   const currentUnlockedLevel = progress.unlockedLevelByTheme[themeSlug] ?? 1;
-  const nextUnlockedLevel = Math.max(currentUnlockedLevel, Math.min(3, numericLevel + 1));
+  const nextUnlockedLevel = correctCount >= 3
+    ? Math.max(currentUnlockedLevel, Math.min(3, numericLevel + 1))
+    : currentUnlockedLevel;
 
   writePersistedProgress({
     ...progress,

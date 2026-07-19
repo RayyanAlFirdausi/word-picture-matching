@@ -340,7 +340,7 @@ export function CongratulationsResult({
   level: string;
   levelHref: string;
   primaryHref: string;
-  primaryLabel: "Next" | "Previous";
+  primaryLabel: "Next" | "Previous" | "Repeat";
   repeatHref: string;
   storageKey: string;
   locale?: Locale;
@@ -352,8 +352,8 @@ export function CongratulationsResult({
   const content = getResultContent(correctCount, totalCount, labels);
 
   useEffect(() => {
-    persistLevelCompletion(theme, level, content.stars);
-  }, [content.stars, level, theme]);
+    persistLevelCompletion(theme, level, content.stars, correctCount);
+  }, [content.stars, correctCount, level, theme]);
 
   function repeatLevel() {
     clearPersistedGameState(storageKey);
@@ -403,14 +403,20 @@ export function CongratulationsResult({
 
         <div className="flex w-full flex-col gap-3">
           <div className="flex h-[58px] w-full items-start gap-3">
-            <ResultButton onClick={repeatLevel} variant="pink">
-              {commonLabels.repeat}
-            </ResultButton>
-            <ResultButton onClick={goPrimary} variant="yellow">
-              {primaryLabel === "Next"
-                ? commonLabels.next
-                : commonLabels.previous}
-            </ResultButton>
+            {primaryLabel === "Repeat" ? (
+              <ResultButton onClick={goPrimary} variant="yellow" wide>
+                {commonLabels.repeat}
+              </ResultButton>
+            ) : (
+              <>
+                <ResultButton onClick={repeatLevel} variant="pink">
+                  {commonLabels.repeat}
+                </ResultButton>
+                <ResultButton onClick={goPrimary} variant="yellow">
+                  {primaryLabel === "Next" ? commonLabels.next : commonLabels.previous}
+                </ResultButton>
+              </>
+            )}
           </div>
           <ResultButton onClick={goToLevels} variant="blue" wide>
             {commonLabels.exit}

@@ -53,19 +53,22 @@ export default async function CongratulationsPage({
 
   const numericLevel = Number(level);
   const totalCount = parseTotalCount(total);
+  const correctCount = parseCorrectCount(correct, totalCount);
+  const canUnlockNextLevel = correctCount >= 3;
   const targetLevel = numericLevel >= 3 ? 2 : Math.min(3, numericLevel + 1);
+  const repeatHref = `/themes/${theme}/levels/${level}/play/game`;
   const locale = await getRequestLocale();
 
   return (
     <CongratulationsResult
-      correctCount={parseCorrectCount(correct, totalCount)}
+      correctCount={correctCount}
       totalCount={totalCount}
       theme={theme}
       level={level}
       levelHref={`/themes/${theme}/levels`}
-      primaryHref={`/themes/${theme}/levels/${targetLevel}/play/game`}
-      primaryLabel={numericLevel >= 3 ? "Previous" : "Next"}
-      repeatHref={`/themes/${theme}/levels/${level}/play/game`}
+      primaryHref={numericLevel < 3 && !canUnlockNextLevel ? repeatHref : `/themes/${theme}/levels/${targetLevel}/play/game`}
+      primaryLabel={numericLevel >= 3 ? "Previous" : canUnlockNextLevel ? "Next" : "Repeat"}
+      repeatHref={repeatHref}
       storageKey={createGameStateStorageKey(theme, level)}
       locale={locale}
     />

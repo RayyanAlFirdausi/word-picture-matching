@@ -7,16 +7,12 @@ import {
   getValidatedPlayContext,
   InstructionBody,
   InstructionModalShell,
+  InstructionPaginationDots,
   InstructionScreen,
+  InstructionVisualPanel,
   PinkButtonLink,
   YellowButtonLink,
 } from "../_components/instruction-screen";
-
-const instructionImages = [
-  "/figma/play-instruction-image-1.png",
-  "/figma/play-instruction-image-2.png",
-  "/figma/play-instruction-image-3.png",
-] as const;
 
 export const dynamicParams = false;
 
@@ -28,39 +24,53 @@ export function generateStaticParams() {
   return generatePlayableStaticParams();
 }
 
-function PhotoCard({ src, className, priority }: { src: string; className: string; priority?: boolean }) {
+function StepItem({ number, label }: { number: number; label: string }) {
   return (
-    <div
-      className={`absolute h-[160px] w-[220px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[12px] border-2 border-white bg-white shadow-[0_4px_34px_rgba(0,0,0,0.35),0_4px_4px_rgba(0,0,0,0.02)] ${className}`}
-    >
-      <Image src={src} alt="" fill sizes="220px" className="object-cover" priority={priority} />
+    <div className="relative z-10 flex w-[148px] flex-col items-center gap-3 text-center">
+      <div className="flex size-7 items-center justify-center rounded-full bg-white p-1 font-geist text-[14px] font-semibold leading-normal text-black">
+        {number}
+      </div>
+      <p className="font-geist text-[14px] font-medium leading-normal text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.25)]">
+        {label}
+      </p>
     </div>
   );
 }
 
-function InstructionOneModal({ closeHref, nextHref, labels, commonLabels }: { closeHref: string; nextHref: string; labels: { guessImage: string; close: string }; commonLabels: { next: string } }) {
+function InstructionOneModal({
+  closeHref,
+  nextHref,
+  labels,
+  commonLabels,
+}: {
+  closeHref: string;
+  nextHref: string;
+  labels: { guessImage: string; close: string; imageStepLabels: readonly string[] };
+  commonLabels: { next: string };
+}) {
   return (
     <InstructionModalShell titleId="instruction-title">
-      <div className="relative min-h-0 flex-1 overflow-hidden rounded-[22px] bg-[#f1f1f1]">
-        <PhotoCard
-          src={instructionImages[0]}
-          priority
-          className="left-[calc(50%+96px)] top-[calc(50%-64px)] z-10 rotate-2 max-[700px]:left-[calc(50%+32px)] max-[700px]:top-[calc(50%-54px)]"
-        />
-        <PhotoCard
-          src={instructionImages[1]}
-          className="left-[calc(50%-104px)] top-[calc(50%-32px)] z-20 max-[700px]:left-[calc(50%-85px)] max-[700px]:top-[calc(50%-18px)]"
-        />
-        <PhotoCard
-          src={instructionImages[2]}
-          className="left-[calc(50%+6px)] top-[calc(50%+37px)] z-30 rotate-2 max-[700px]:left-[calc(50%-24px)] max-[700px]:top-[calc(50%+28px)]"
-        />
-        <div className="absolute bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2" aria-hidden="true">
-          <span className="size-2.5 rounded-full bg-[#ff8400]" />
-          <span className="size-2.5 rounded-full bg-[#d8d8d8]" />
-          <span className="size-2.5 rounded-full bg-[#d8d8d8]" />
+      <InstructionVisualPanel>
+        <div className="absolute left-1/2 top-8 h-[160px] w-[220px] -translate-x-1/2 overflow-hidden rounded-[12px] border-2 border-white bg-white shadow-[0_4px_34px_rgba(0,0,0,0.35),0_4px_4px_rgba(0,0,0,0.02)]">
+          <Image
+            src="/figma/game-question-tiger.png"
+            alt=""
+            fill
+            sizes="220px"
+            className="object-cover object-bottom"
+            priority
+          />
         </div>
-      </div>
+
+        <div className="absolute left-1/2 top-56 flex w-[min(476px,calc(100%-48px))] -translate-x-1/2 items-start justify-between">
+          <span aria-hidden="true" className="absolute left-[74px] right-[74px] top-3.5 border-t-2 border-dashed border-white/70" />
+          {labels.imageStepLabels.map((label, index) => (
+            <StepItem key={label} number={index + 1} label={label} />
+          ))}
+        </div>
+
+        <InstructionPaginationDots activeIndex={0} />
+      </InstructionVisualPanel>
 
       <InstructionBody titleId="instruction-title" prompt={labels.guessImage}>
         <PinkButtonLink href={closeHref}>{labels.close}</PinkButtonLink>

@@ -66,7 +66,7 @@ export function InstructionScreen({
   collectionLabel?: string;
 }) {
   return (
-    <main className="relative min-h-dvh overflow-x-clip bg-[#678cff] font-gasoek">
+    <main className="relative min-h-[max(744px,100dvh)] overflow-x-clip bg-[#678cff] font-gasoek">
       <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: backgroundPattern }} />
 
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -113,10 +113,31 @@ export function InstructionModalShell({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      className="absolute left-1/2 top-20 z-30 flex h-[520px] w-[min(600px,calc(100%-32px))] -translate-x-1/2 flex-col gap-0.5 overflow-hidden rounded-[24px] bg-white p-0.5 max-[700px]:top-24 max-[700px]:h-[min(520px,calc(100dvh-112px))]"
+      className="absolute left-1/2 top-20 z-30 flex h-[584px] w-[min(600px,calc(100%-32px))] -translate-x-1/2 flex-col gap-0.5 overflow-hidden rounded-[24px] bg-white p-0.5 max-[700px]:top-24 max-[700px]:h-[min(584px,calc(100dvh-112px))]"
     >
       {children}
     </section>
+  );
+}
+
+export function InstructionVisualPanel({ children }: { children: ReactNode }) {
+  return (
+    <div className="relative h-[388px] min-h-0 shrink-0 overflow-hidden rounded-[22px] bg-[#678cff]">
+      {children}
+    </div>
+  );
+}
+
+export function InstructionPaginationDots({ activeIndex }: { activeIndex: 0 | 1 | 2 }) {
+  return (
+    <div className="absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2" aria-hidden="true">
+      {[0, 1, 2].map((index) => (
+        <span
+          key={index}
+          className={`size-2.5 rounded-full ${index === activeIndex ? "bg-[#ff8400]" : "bg-[#d8d8d8]"}`}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -130,11 +151,11 @@ export function InstructionBody({
   children: ReactNode;
 }) {
   return (
-    <div className="flex shrink-0 flex-col items-center justify-center gap-12 bg-white p-6 max-[700px]:gap-8">
-      <p id={titleId} className="w-full text-center font-sans text-[20px] font-semibold leading-normal text-black">
+    <div className="flex h-[190px] shrink-0 flex-col items-center bg-white px-6 pb-6 pt-6">
+      <p id={titleId} className="w-full text-center font-geist text-[28px] font-medium leading-normal text-black max-[700px]:text-[24px]">
         {prompt}
       </p>
-      <div className="flex w-full items-end gap-2">{children}</div>
+      <div className="mt-auto flex h-[58px] w-full items-end gap-2">{children}</div>
     </div>
   );
 }
@@ -143,7 +164,7 @@ export function PinkButtonLink({ href, children }: { href: string; children: Rea
   return (
     <Link
       href={href}
-      className="relative flex h-[58px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[64px] border-2 border-[#4f001b] px-8 pb-5 pt-4 text-center transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
+      className="relative flex h-[58px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[64px] border-2 border-[#4f001b] px-8 pb-5 pt-4 text-center uppercase transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
     >
       <span aria-hidden="true" className="absolute inset-0 rounded-[64px] bg-[#ff679a]" />
       <span className="relative text-[16px] leading-[1.3] text-[#4f001b]">{children}</span>
