@@ -517,7 +517,6 @@ export function GameLevel({
       const {
         answerStatus: statusAtTimeout,
         lives: livesAtTimeout,
-        questionIndex: questionIndexAtTimeout,
       } = timerStateRef.current;
 
       if (statusAtTimeout !== "idle") {
@@ -531,14 +530,17 @@ export function GameLevel({
         return;
       }
 
-      resetRound(questionIndexAtTimeout);
+      setSecondsLeft(roundDurationSeconds);
+      draggedLetterRef.current = null;
+      dropHandledRef.current = false;
+      setRound((current) => current + 1);
     }, roundDurationMs);
 
     return () => {
       window.clearInterval(interval);
       window.clearTimeout(timeout);
     };
-  }, [gameQuestions.length, hasHydratedState, resetRound, round]);
+  }, [gameQuestions.length, hasHydratedState, round]);
 
   useEffect(() => {
     if (hasHydratedState && lives === 0) {
